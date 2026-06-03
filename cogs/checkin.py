@@ -60,8 +60,9 @@ class CheckinCog(commands.Cog):
 
         hype = get_hype()
         lines = [
-            f"**{username}** checked in: *{workout}* · +{XP_PER_CHECKIN} XP 🏋️ · +{gold_earned}g 💰",
-            f"Streak: {new_streak} day{'s' if new_streak != 1 else ''} | Level {new_level} | Total XP: {new_xp}",
+            f"**{username}** checked in:",
+            f"*{workout}* · +{XP_PER_CHECKIN} XP 🏋️ · +{gold_earned}g 💰"
+            f"**Streak**: {new_streak} day{'s' if new_streak != 1 else ''} | **Level** {new_level} | **Total XP**: {new_xp}",
             "",
             hype["text"],
         ]
