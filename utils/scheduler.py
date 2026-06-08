@@ -34,8 +34,10 @@ async def morning_reminder(bot):
         return
     channel = bot.get_channel(channel_id)
     if channel:
+        role_id = int(os.environ.get("REMINDER_ROLE_ID", 0))
+        mention = f"<@&{role_id}> " if role_id else ""
         await channel.send(
-            "🌅 Good morning! Time to get moving — log your workout with `/checkin`! 💪"
+            f"{mention}🌅 Good morning! Time to get moving — log your workout with `/checkin`! 💪"
         )
 
 
