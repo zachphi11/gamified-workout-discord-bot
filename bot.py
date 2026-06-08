@@ -17,7 +17,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 @bot.event
 async def on_ready():
     bot.pool = await create_pool()
-    start_schedulers(bot.pool)
+    start_schedulers(bot.pool, bot)
     await bot.tree.sync()
     print(f"Bot is ready — logged in as {bot.user} (ID: {bot.user.id})")
 
