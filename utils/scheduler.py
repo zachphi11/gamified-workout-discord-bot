@@ -8,7 +8,7 @@ from db import queries
 CHICAGO_TZ = ZoneInfo("America/Chicago")
 
 _MIDNIGHT = datetime.time(hour=0, minute=0, tzinfo=CHICAGO_TZ)
-_MORNING = datetime.time(hour=12, minute=5, tzinfo=CHICAGO_TZ)
+_AFTERNOON = datetime.time(hour=1, minute=5, tzinfo=CHICAGO_TZ)
 
 
 @tasks.loop(time=_MIDNIGHT)
@@ -27,7 +27,7 @@ async def monthly_reset(pool):
         print(f"[scheduler] Monthly XP reset at {now.isoformat()}")
 
 
-@tasks.loop(time=_MORNING)
+@tasks.loop(time=_AFTERNOON)
 async def morning_reminder(bot):
     channel_id = int(os.environ.get("REMINDER_CHANNEL_ID", 0))
     if not channel_id:
