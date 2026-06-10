@@ -8,7 +8,7 @@ from db import queries
 CHICAGO_TZ = ZoneInfo("America/Chicago")
 
 _MIDNIGHT = datetime.time(hour=0, minute=0, tzinfo=CHICAGO_TZ)
-_MORNING = datetime.time(hour=11, minute=0, tzinfo=CHICAGO_TZ)
+_MORNING = datetime.time(hour=12, minute=0, tzinfo=CHICAGO_TZ)
 
 
 @tasks.loop(time=_MIDNIGHT)
