@@ -1,11 +1,11 @@
 import datetime
 import os
-import pytz
+from zoneinfo import ZoneInfo
 from discord.ext import tasks
 
 from db import queries
 
-CHICAGO_TZ = pytz.timezone("America/Chicago")
+CHICAGO_TZ = ZoneInfo("America/Chicago")
 
 _MIDNIGHT = datetime.time(hour=0, minute=0, tzinfo=CHICAGO_TZ)
 _MORNING = datetime.time(hour=11, minute=0, tzinfo=CHICAGO_TZ)
@@ -31,14 +31,24 @@ async def monthly_reset(pool):
 async def morning_reminder(bot):
     channel_id = int(os.environ.get("REMINDER_CHANNEL_ID", 0))
     if not channel_id:
+        print("[scheduler] REMINDER_CHANNEL_ID not set")
         return
-    channel = bot.get_channel(channel_id)
-    if channel:
-        role_id = int(os.environ.get("REMINDER_ROLE_ID", 0))
-        mention = f"<@&{role_id}> " if role_id else ""
-        await channel.send(
-            f"{mention}🌅 Good morning! Time to get moving — log your workout with `/checkin`! 💪"
-        )
+    try:
+        channel = await bot.fetch_channel(channel_id)
+    except Exception as e:
+        print(f"[scheduler] Could not fetch channel {channel_id}: {e}")
+        return
+    role_id = int(os.environ.get("REMINDER_ROLE_ID", 0))
+    mention = f"<@&{role_id}> " if role_id else ""
+    await channel.send(
+        f"{mention}🌅 Good morning! Time to get moving — log your workout with `/checkin`! 💪"
+    )
+    print(f"[scheduler] morning_reminder sent at {datetime.datetime.now(CHICAGO_TZ).isoformat()}")
+
+
+@morning_reminder.error
+async def on_morning_reminder_error(error):
+    print(f"[scheduler] morning_reminder error: {error}")
 
 
 def start_schedulers(pool, bot) -> None:
