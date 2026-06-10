@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from datetime import datetime
-import pytz
+from zoneinfo import ZoneInfo
 
 from db import queries
 from utils.levels import get_level, LEVEL_THRESHOLDS
@@ -9,7 +9,7 @@ from utils.streak import compute_new_streak
 from utils.hype import get_hype
 from utils.shop import compute_gold_earned, compute_streak_bonus
 
-CHICAGO_TZ = pytz.timezone("America/Chicago")
+CHICAGO_TZ = ZoneInfo("America/Chicago")
 XP_PER_CHECKIN = 25
 STREAK_MILESTONES = {3, 7, 30}
 
