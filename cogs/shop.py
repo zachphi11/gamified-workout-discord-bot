@@ -6,7 +6,10 @@ from utils.levels import get_level
 
 CATEGORY_LABELS = {
     "weapon": "Weapons",
-    "armor": "Armor",
+    "offhand": "Off-Hand",
+    "head": "Head",
+    "chest": "Chest",
+    "boots": "Boots",
     "accessory": "Accessories",
     "pet": "Pets",
 }
@@ -57,8 +60,9 @@ class ShopCog(commands.Cog):
             locked = item["level_required"] > level
             effect = _effect_text(item["effect_type"], item["effect_value"])
             status = " 🔒 (locked)" if locked else (" ✅ owned" if owned else "")
+            type_label = CATEGORY_LABELS.get(item["item_type"], item["item_type"].title())
             embed.add_field(
-                name=f"{item['name']} — {item['cost']}g (Lv.{item['level_required']}){status}",
+                name=f"{item['name']} [{type_label}] — {item['cost']}g (Lv.{item['level_required']}){status}",
                 value=f"{item['description']}\n*{effect}*",
                 inline=False,
             )
@@ -103,10 +107,16 @@ class ShopCog(commands.Cog):
             )
             return
 
+        unequipped = await queries.equip_item(self.bot.pool, user_id, item["id"], item["item_type"])
+
         effect = _effect_text(item["effect_type"], item["effect_value"])
+        slot_label = CATEGORY_LABELS.get(item["item_type"], item["item_type"].title())
+        equip_line = f"⚔️ Equipped in your **{slot_label}** slot."
+        if unequipped:
+            equip_line += f"\n↩️ **{unequipped[0]}** was unequipped to make room."
         embed = discord.Embed(
             title="🛍️ Purchase Successful!",
-            description=f"You bought **{item['name']}** for **{item['cost']}g**!\n*{effect}*",
+            description=f"You bought **{item['name']}** for **{item['cost']}g**!\n*{effect}*\n\n{equip_line}",
             color=discord.Color.green(),
         )
         embed.set_footer(text=f"Remaining gold: {gold - item['cost']}g")
@@ -129,6 +139,14 @@ class ShopCog(commands.Cog):
             slot = item["item_type"]
             by_slot.setdefault(slot, []).append(item)
 
+        equipped_lines = []
+        for slot in ("weapon", "offhand", "head", "chest", "boots", "accessory", "pet"):
+            label = CATEGORY_LABELS.get(slot, slot.title())
+            equipped_names = [i["name"] for i in by_slot.get(slot, []) if i["equipped"]]
+            value = ", ".join(f"**{n}**" for n in equipped_names) if equipped_names else "*none*"
+            equipped_lines.append(f"{label}: {value}")
+        embed.add_field(name="⚔️ Currently Equipped", value="\n".join(equipped_lines), inline=False)
+
         for slot, slot_items in by_slot.items():
             lines = []
             for item in slot_items:
@@ -149,20 +167,21 @@ class ShopCog(commands.Cog):
         user_id = str(interaction.user.id)
         inv = await queries.get_inventory(self.bot.pool, user_id)
 
-        owned = {item["name"]: item for item in inv}
-        if item_name not in owned:
+        owned = {item["name"].lower(): item for item in inv}
+        if item_name.lower() not in owned:
             await interaction.response.send_message(
                 f"You don't own **{item_name}**. Use `/buy` to purchase it first.", ephemeral=True
             )
             return
 
-        item = owned[item_name]
-        await queries.equip_item(self.bot.pool, user_id, item["item_id"], item["item_type"])
+        item = owned[item_name.lower()]
+        unequipped = await queries.equip_item(self.bot.pool, user_id, item["item_id"], item["item_type"])
 
         slot_label = CATEGORY_LABELS.get(item["item_type"], item["item_type"].title())
-        await interaction.response.send_message(
-            f"⚔️ **{item_name}** equipped! ({slot_label} slot)"
-        )
+        msg = f"⚔️ **{item_name}** equipped! ({slot_label} slot)"
+        if unequipped:
+            msg += f"\n↩️ **{unequipped[0]}** was unequipped to make room."
+        await interaction.response.send_message(msg)
 
 
 async def setup(bot: commands.Bot):

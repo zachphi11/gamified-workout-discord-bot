@@ -107,7 +107,7 @@ async def reset_monthly_xp(pool: asyncpg.Pool) -> None:
 
 async def get_item_by_name(pool: asyncpg.Pool, name: str) -> asyncpg.Record | None:
     async with pool.acquire() as conn:
-        return await conn.fetchrow("SELECT * FROM items WHERE name = $1", name)
+        return await conn.fetchrow("SELECT * FROM items WHERE LOWER(name) = LOWER($1)", name)
 
 
 async def get_inventory(pool: asyncpg.Pool, user_id: str) -> list[asyncpg.Record]:
@@ -160,23 +160,38 @@ async def buy_item(pool: asyncpg.Pool, user_id: str, item_id: int, cost: int) ->
             return True
 
 
-async def equip_item(pool: asyncpg.Pool, user_id: str, item_id: int, item_type: str) -> None:
-    """Unequip any same-slot item then equip the target item."""
+SLOT_LIMITS: dict[str, int] = {"accessory": 2}
+
+
+async def equip_item(pool: asyncpg.Pool, user_id: str, item_id: int, item_type: str) -> list[str]:
+    """Equip an item, unequipping the oldest if the slot is full. Returns names of unequipped items."""
+    slot_limit = SLOT_LIMITS.get(item_type, 1)
     async with pool.acquire() as conn:
         async with conn.transaction():
-            await conn.execute(
+            currently_equipped = await conn.fetch(
                 """
-                UPDATE inventory
-                SET equipped = FALSE
-                WHERE user_id = $1
-                  AND equipped = TRUE
-                  AND item_id IN (SELECT id FROM items WHERE item_type = $2)
+                SELECT i.item_id, items.name
+                FROM inventory i
+                JOIN items ON items.id = i.item_id
+                WHERE i.user_id = $1 AND i.equipped = TRUE AND items.item_type = $2
+                ORDER BY i.acquired_at ASC
                 """,
                 user_id,
                 item_type,
             )
+            unequipped = []
+            overflow = len(currently_equipped) - slot_limit + 1
+            if overflow > 0:
+                for row in currently_equipped[:overflow]:
+                    await conn.execute(
+                        "UPDATE inventory SET equipped = FALSE WHERE user_id = $1 AND item_id = $2",
+                        user_id,
+                        row["item_id"],
+                    )
+                    unequipped.append(row["name"])
             await conn.execute(
                 "UPDATE inventory SET equipped = TRUE WHERE user_id = $1 AND item_id = $2",
                 user_id,
                 item_id,
             )
+            return unequipped

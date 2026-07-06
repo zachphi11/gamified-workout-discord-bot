@@ -159,7 +159,7 @@ class TestEquipItem:
         assert len(equipped) == 1
         assert equipped[0]["name"] == "Iron Ring"
 
-    async def test_auto_unequips_previous_item_in_same_slot(self, pool):
+    async def test_two_accessories_can_be_equipped_simultaneously(self, pool):
         today = date.today()
         await queries.log_checkin(pool, "user1", "Alice", "workout", 25, 1, today, gold_earned=500)
         iron_ring = await queries.get_item_by_name(pool, "Iron Ring")
@@ -170,6 +170,25 @@ class TestEquipItem:
         await queries.equip_item(pool, "user1", merchants_pouch["id"], merchants_pouch["item_type"])
         equipped = await queries.get_equipped_items(pool, "user1")
         equipped_names = [e["name"] for e in equipped]
+        assert "Iron Ring" in equipped_names
+        assert "Merchant's Pouch" in equipped_names
+
+    async def test_third_accessory_unequips_oldest(self, pool):
+        today = date.today()
+        await queries.log_checkin(pool, "user1", "Alice", "workout", 25, 1, today, gold_earned=1500)
+        iron_ring = await queries.get_item_by_name(pool, "Iron Ring")
+        merchants_pouch = await queries.get_item_by_name(pool, "Merchant's Pouch")
+        gold_crown = await queries.get_item_by_name(pool, "Gold Crown")
+        await queries.buy_item(pool, "user1", iron_ring["id"], iron_ring["cost"])
+        await queries.buy_item(pool, "user1", merchants_pouch["id"], merchants_pouch["cost"])
+        await queries.buy_item(pool, "user1", gold_crown["id"], gold_crown["cost"])
+        await queries.equip_item(pool, "user1", iron_ring["id"], iron_ring["item_type"])
+        await queries.equip_item(pool, "user1", merchants_pouch["id"], merchants_pouch["item_type"])
+        unequipped = await queries.equip_item(pool, "user1", gold_crown["id"], gold_crown["item_type"])
+        assert unequipped == ["Iron Ring"]
+        equipped = await queries.get_equipped_items(pool, "user1")
+        equipped_names = [e["name"] for e in equipped]
+        assert "Gold Crown" in equipped_names
         assert "Merchant's Pouch" in equipped_names
         assert "Iron Ring" not in equipped_names
 

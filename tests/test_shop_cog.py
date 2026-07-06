@@ -72,6 +72,7 @@ class TestBuyCommand:
             patch("cogs.shop.queries.get_item_by_name", new=AsyncMock(return_value=item)),
             patch("cogs.shop.queries.get_user", new=AsyncMock(return_value=user_row)),
             patch("cogs.shop.queries.buy_item", new=AsyncMock(return_value=True)),
+            patch("cogs.shop.queries.equip_item", new=AsyncMock(return_value=[])),
         ):
             await cog.buy.callback(cog, interaction, item_name="Iron Ring")
 
@@ -135,7 +136,7 @@ class TestEquipCommand:
 
         with (
             patch("cogs.shop.queries.get_inventory", new=AsyncMock(return_value=[inv_item])),
-            patch("cogs.shop.queries.equip_item", new=AsyncMock()) as mock_equip,
+            patch("cogs.shop.queries.equip_item", new=AsyncMock(return_value=[])) as mock_equip,
         ):
             await cog.equip.callback(cog, interaction, item_name="Iron Ring")
 
@@ -150,7 +151,7 @@ class TestEquipCommand:
 
         with (
             patch("cogs.shop.queries.get_inventory", new=AsyncMock(return_value=[inv_item])),
-            patch("cogs.shop.queries.equip_item", new=AsyncMock()) as mock_equip,
+            patch("cogs.shop.queries.equip_item", new=AsyncMock(return_value=[])) as mock_equip,
         ):
             await cog.equip.callback(cog, interaction, item_name="Iron Ring")
 
