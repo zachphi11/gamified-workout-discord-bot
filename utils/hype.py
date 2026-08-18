@@ -10,20 +10,19 @@ HYPE_ENTRIES = [
     {"text": "Progress > perfection. You showed up. That's all that matters."},
     {"text": "Your future self is sending gratitude from the future. Keep going."},
     {
-        "text": "SWEAT. GRIND. REPEAT. You know the drill.",
-        "gif_url": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
-    },
+        "text": "Can’t wait for you to wrap those veiny forearms around my neck as the light drains from my eyes!",
+        "gif_url": "https://klipy.com/gifs/yumeko-anime"},
     {
-        "text": "No days off. Okay maybe rest days. But NOT today.",
-        "gif_url": "https://media.giphy.com/media/3o7TKUM3IgJBX2as9O/giphy.gif",
+        "text": "He’s still following you, don’t let your guard down just yet.",
+        "gif_url": "https://klipy.com/gifs/kto-kounotoritoken-7",
     },
-    {"text": "Pain is temporary. Glory is forever. You're writing your story."},
+    {"text": "Pain is temporary. Suffering is eternal."},
     {"text": "Another check-in? You're becoming unstoppable. 🔥"},
     {"text": "The gym doesn't care what day it is. Neither do you. That's power."},
-    {"text": "Champions are made when nobody's watching. You're watching."},
+    {"text": "I want to crawl inside your ribcage and pay rent."},
     {
-        "text": "LFG!!!!! The gains don't stop!",
-        "gif_url": "https://media.giphy.com/media/xT9IgG50Lg7russFcA/giphy.gif",
+        "text": "I’d recognize your breathing anywhere.",
+        "gif_url": "https://klipy.com/gifs/elmo-stare",
     },
 ]
 
